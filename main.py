@@ -1,8 +1,8 @@
 diff --git a/main.py b/main.py
-index 4e78b5c44da91cd711fe16005bf5baf17c5650cf..4616b9d5f1ee470c23dfb93f932c1f16764063c6 100644
+index 4e78b5c44da91cd711fe16005bf5baf17c5650cf..e4dd128776c993cdf21b981d97dd22b4c63f4454 100644
 --- a/main.py
 +++ b/main.py
-@@ -1,150 +1,531 @@
+@@ -1,150 +1,563 @@
 -import os
 -import time
 -import requests
@@ -157,6 +157,7 @@ index 4e78b5c44da91cd711fe16005bf5baf17c5650cf..4616b9d5f1ee470c23dfb93f932c1f16
 +import time
 +import math
 +import hashlib
++from pathlib import Path
 +from datetime import datetime, timedelta, timezone
 +from email.utils import parsedate_to_datetime
 +from xml.etree import ElementTree as ET
@@ -164,13 +165,17 @@ index 4e78b5c44da91cd711fe16005bf5baf17c5650cf..4616b9d5f1ee470c23dfb93f932c1f16
 +import requests
 +from fastapi import FastAPI, HTTPException
 +from fastapi.middleware.cors import CORSMiddleware
++from fastapi.responses import FileResponse
 +from pydantic import BaseModel
 +
 +APP_ENV = os.getenv("APP_ENV", "prod")
-+ALLOWED_ORIGIN = os.getenv("ALLOWED_ORIGIN", "")  # e.g. https://yourdomain.com
++ALLOWED_ORIGIN = os.getenv("ALLOWED_ORIGIN", "")  # backward-compatible single origin
++ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "")  # comma-separated origins
 +TWELVEDATA_KEY = os.getenv("TWELVEDATA_KEY", "")
 +TWELVEDATA_BASE = "https://api.twelvedata.com"
 +REQUEST_TIMEOUT = 20
++BASE_DIR = Path(__file__).resolve().parent
++INDEX_HTML = BASE_DIR / "index.html"
 +
 +GDELT_DOC_API = "https://api.gdeltproject.org/api/v2/doc/doc"
 +INTEL_CACHE_TTL_SECONDS = int(os.getenv("INTEL_CACHE_TTL_SECONDS", "90"))
@@ -247,12 +252,16 @@ index 4e78b5c44da91cd711fe16005bf5baf17c5650cf..4616b9d5f1ee470c23dfb93f932c1f16
 +
 +app = FastAPI()
 +
-+# If you use Option A (Fly direct), you MUST enable CORS for your Plesk domain.
-+# If you use Option B (Plesk proxy), you can set ALLOWED_ORIGIN="" and skip CORS.
++origins = []
 +if ALLOWED_ORIGIN:
++    origins.append(ALLOWED_ORIGIN.strip())
++if ALLOWED_ORIGINS:
++    origins.extend([origin.strip() for origin in ALLOWED_ORIGINS.split(",") if origin.strip()])
++
++if origins:
 +    app.add_middleware(
 +        CORSMiddleware,
-+        allow_origins=[ALLOWED_ORIGIN],
++        allow_origins=sorted(set(origins)),
 +        allow_credentials=False,
 +        allow_methods=["GET", "POST", "OPTIONS"],
 +        allow_headers=["*"],
@@ -565,10 +574,33 @@ index 4e78b5c44da91cd711fe16005bf5baf17c5650cf..4616b9d5f1ee470c23dfb93f932c1f16
 +
 +
 +# ---------- Routes ----------
++@app.get("/")
++def home():
++    if INDEX_HTML.exists():
++        return FileResponse(INDEX_HTML)
++    return {
++        "ok": True,
++        "message": "Turrner API is running. index.html not found in container image.",
++    }
++
++
++@app.get("/index.html")
++def index_file():
++    if not INDEX_HTML.exists():
++        raise HTTPException(status_code=404, detail="index.html not found")
++    return FileResponse(INDEX_HTML)
++
++
 +@app.get("/api/health")
 +def health():
 +    # Replace with real network + wallet when you wire Ostium SDK
-+    return {"ok": True, "network": "arbitrum", "address": "0x0000000000000000000000000000000000000000"}
++    return {
++        "ok": True,
++        "app_env": APP_ENV,
++        "network": "arbitrum",
++        "address": "0x0000000000000000000000000000000000000000",
++        "index_present": INDEX_HTML.exists(),
++    }
 +
 +@app.get("/api/balance")
 +def balance():
