@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Turrner — News Terminal</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg0:#070A0B;
+      --bg1:#0B1012;
+      --bg2:#11181B;
+      --stroke:#1E2A2F;
+      --muted:#9AA7AE;
+      --text:#EAF2F4;
+      --accent:#0BF673;
+      --danger:#FF4D4D;
+      --warn:#F7C948;
+      --shadow: 0 18px 55px rgba(0,0,0,.55);
+      --radius: 16px;
+    }
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(900px 500px at 20% 0%, rgba(11,246,115,.10), transparent 45%),
+        radial-gradient(900px 500px at 85% 10%, rgba(11,246,115,.07), transparent 40%),
+        linear-gradient(180deg, var(--bg0), #050708 60%, #050708);
+      color: var(--text);
+    }
+    .wrap{ max-width: 1280px; margin: 0 auto; padding: 18px 18px 40px; }
+
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding: 14px 16px;
+      background: linear-gradient(180deg, rgba(17,24,27,.75), rgba(11,16,18,.75));
+      border:1px solid rgba(30,42,47,.9);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      position: sticky; top: 10px; z-index: 10;
+    }
+    .brand{ display:flex; align-items:center; gap:10px; min-width: 260px; }
+    .dot{ width:10px;height:10px;border-radius:999px;background:var(--accent); box-shadow: 0 0 0 5px rgba(11,246,115,.10), 0 0 22px rgba(11,246,115,.40); }
+    .brand h1{ margin:0; font-size: 14px; font-weight: 900; letter-spacing: .2px; }
+    .brand span{ color: var(--muted); font-weight: 600; font-size: 12px; margin-left: 6px; }
+    .small{ font-size: 11px; color: rgba(154,167,174,.85); font-weight: 800; }
+
+    .top-actions{ display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-wrap: wrap; }
+    .pill{
+      display:flex; align-items:center; gap:8px;
+      padding: 10px 12px; border-radius: 999px;
+      border: 1px solid rgba(30,42,47,.85);
+      background: rgba(17,24,27,.55);
+      color: var(--text);
+      font-size: 12px; white-space: nowrap;
+    }
+    .pill .k{ color: var(--muted); font-weight: 800; letter-spacing: .2px; }
+    .pill .v{ color: var(--text); font-weight: 900; }
+    .pill .led{ width:8px;height:8px;border-radius:999px;background:var(--accent); box-shadow: 0 0 0 5px rgba(11,246,115,.10); }
+
+    .btn{
+      appearance:none; border:none; cursor:pointer;
+      border-radius: 12px; padding: 10px 12px;
+      font-weight: 900; font-size: 12px;
+      color: var(--text);
+      background: rgba(17,24,27,.55);
+      border: 1px solid rgba(30,42,47,.9);
+      transition: transform .08s ease, border-color .15s ease, background .15s ease;
+    }
+    .btn:hover{ border-color: rgba(11,246,115,.55); background: rgba(11,246,115,.06); }
+    .btn:active{ transform: scale(.98); }
+    .btn-accent{ background: rgba(11,246,115,.10); border-color: rgba(11,246,115,.55); }
+
+    .grid{
+      margin-top: 16px;
+      display:grid;
+      grid-template-columns: 320px 1fr;
+      gap: 16px;
+      align-items:start;
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(17,24,27,.78), rgba(11,16,18,.78));
+      border:1px solid rgba(30,42,47,.92);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card-h{
+      padding: 14px 14px 10px;
+      border-bottom:1px solid rgba(30,42,47,.7);
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .card-h h2{ margin:0; font-size: 13px; font-weight: 900; letter-spacing: .2px; }
+    .sub{ color: var(--muted); font-size: 12px; font-weight: 700; }
+    .card-b{ padding: 14px; }
+
+    .pairs{ display:flex; flex-direction:column; gap:10px; }
+    .pair{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding: 12px 12px; border-radius: 14px;
+      border:1px solid rgba(30,42,47,.9);
+      background: rgba(17,24,27,.45);
+      cursor:pointer;
+      transition: border-color .15s ease, background .15s ease, transform .08s ease;
+      user-select:none;
+    }
+    .pair:hover{ border-color: rgba(11,246,115,.40); background: rgba(11,246,115,.06); }
+    .pair:active{ transform: scale(.99); }
+    .pair.active{
+      border-color: rgba(11,246,115,.72);
+      background: linear-gradient(180deg, rgba(11,246,115,.10), rgba(11,246,115,.04));
+      box-shadow: 0 0 0 4px rgba(11,246,115,.10) inset;
+    }
+    .pair .left{ display:flex; align-items:center; gap:10px; }
+    .badge{
+      width: 34px; height: 34px; border-radius: 12px;
+      display:grid; place-items:center;
+      background: rgba(11,246,115,.10);
+      border:1px solid rgba(11,246,115,.30);
+      color: var(--accent);
+      font-weight: 1000; letter-spacing: .2px; font-size: 12px;
+    }
+    .pair .meta{ display:flex; flex-direction:column; gap:2px; line-height: 1.1; }
+    .pair .meta .sym{ font-weight: 1000; font-size: 12px; }
+    .pair .meta .desc{ color: var(--muted); font-size: 11px; font-weight: 700; }
+    .chip{
+      font-size: 11px; font-weight: 1000;
+      padding: 6px 10px; border-radius: 999px;
+      border: 1px solid rgba(30,42,47,.9);
+      background: rgba(17,24,27,.55);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .news-toolbar{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      flex-wrap:wrap;
+      padding: 10px 14px;
+      border-bottom:1px solid rgba(30,42,47,.7);
+      background: rgba(17,24,27,.35);
+    }
+    .search{
+      flex: 1; min-width: 220px;
+      display:flex; align-items:center; gap:10px;
+      padding: 10px 12px; border-radius: 12px;
+      background: rgba(11,16,18,.55);
+      border:1px solid rgba(30,42,47,.92);
+    }
+    .search input{
+      width:100%;
+      border:none; outline:none;
+      background: transparent;
+      color: var(--text);
+      font-weight: 800;
+      font-size: 12px;
+    }
+    .search input::placeholder{ color: rgba(154,167,174,.75); font-weight: 700; }
+
+    .filters{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .toggle{
+      cursor:pointer;
+      border-radius: 999px;
+      padding: 9px 10px;
+      font-size: 12px;
+      font-weight: 1000;
+      border:1px solid rgba(30,42,47,.92);
+      background: rgba(11,16,18,.55);
+      color: var(--muted);
+      transition: border-color .15s ease, background .15s ease, color .15s ease;
+    }
+    .toggle.on{
+      color: var(--text);
+      border-color: rgba(11,246,115,.55);
+      background: rgba(11,246,115,.08);
+    }
+
+    .select-mini {
+      border: 1px solid rgba(30,42,47,.9);
+      background: rgba(11,16,18,.55);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      outline: none;
+    }
+
+    .tags{ display:flex; gap:8px; flex-wrap:wrap; }
+    .tag{
+      font-size: 11px; font-weight: 1000;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(30,42,47,.9);
+      background: rgba(11,16,18,.45);
+      color: rgba(154,167,174,.95);
+      white-space: nowrap;
+      cursor:pointer;
+    }
+    .tag.on{
+      border-color: rgba(11,246,115,.55);
+      background: rgba(11,246,115,.08);
+      color: var(--text);
+    }
+
+    .news{ padding: 14px; display:flex; flex-direction:column; gap: 12px; }
+
+    .item{
+      border:1px solid rgba(30,42,47,.9);
+      background: rgba(17,24,27,.45);
+      border-radius: 16px;
+      padding: 12px 12px 10px;
+      display:flex; flex-direction:column; gap:10px;
+    }
+    .item-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+    .title{ margin:0; font-size: 13px; font-weight: 1000; letter-spacing: .1px; line-height: 1.25; }
+
+    .meta2{
+      display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .dot2{ width:4px;height:4px;border-radius:999px;background: rgba(154,167,174,.65); }
+
+    .impact{
+      display:flex; align-items:center; gap:8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-weight: 1000;
+      font-size: 11px;
+      border: 1px solid rgba(30,42,47,.92);
+      background: rgba(11,16,18,.55);
+      white-space: nowrap;
+    }
+    .impact.buy{ border-color: rgba(11,246,115,.55); background: rgba(11,246,115,.10); }
+    .impact.sell{ border-color: rgba(255,77,77,.55); background: rgba(255,77,77,.10); }
+    .impact.neutral{ border-color: rgba(247,201,72,.55); background: rgba(247,201,72,.10); }
+
+    .arrow{
+      width: 18px; height: 18px; border-radius: 999px;
+      display:grid; place-items:center;
+      font-size: 12px; font-weight: 1000;
+    }
+    .buy .arrow{ background: rgba(11,246,115,.18); color: var(--accent); }
+    .sell .arrow{ background: rgba(255,77,77,.18); color: var(--danger); }
+    .neutral .arrow{ background: rgba(247,201,72,.18); color: var(--warn); }
+
+    .mini-badge{
+      font-size: 10px;
+      font-weight: 1000;
+      padding: 5px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(30,42,47,.9);
+      background: rgba(11,16,18,.45);
+      color: rgba(154,167,174,.95);
+      white-space: nowrap;
+    }
+    .mini-badge.good{ border-color: rgba(11,246,115,.55); background: rgba(11,246,115,.08); color: var(--text); }
+    .mini-badge.warn{ border-color: rgba(247,201,72,.55); background: rgba(247,201,72,.08); color: var(--text); }
+
+    ul.bullets{
+      margin:0;
+      padding-left: 18px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      color: rgba(234,242,244,.92);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .sources{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; padding-top: 2px; }
+    .slink{
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 1000;
+      font-size: 11px;
+      border-bottom: 1px dashed rgba(11,246,115,.45);
+    }
+    .slink:hover{ border-bottom-color: rgba(11,246,115,.85); }
+
+    .footer-row{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      flex-wrap:wrap;
+      padding-top: 6px;
+      color: rgba(154,167,174,.92);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .skeleton{
+      border:1px dashed rgba(30,42,47,.9);
+      border-radius: 16px;
+      padding: 14px;
+      color: rgba(154,167,174,.85);
+      font-weight: 800;
+      font-size: 12px;
+      background: rgba(17,24,27,.25);
+      white-space: pre-wrap;
+    }
+
+    .bar{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding: 10px 14px;
+      border-top:1px solid rgba(30,42,47,.7);
+      background: rgba(17,24,27,.25);
+    }
+    .bar-left{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+
+    @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } }
+    @media (max-width: 640px){
+      .wrap{ padding: 12px 12px 28px; }
+      .topbar{ top: 8px; padding: 12px 12px; gap: 10px; flex-direction: column; align-items: flex-start; }
+      .brand{ min-width: 0; width: 100%; }
+      .top-actions{ width: 100%; justify-content: flex-start; }
+      .pill{ padding: 9px 10px; }
+      .grid{ gap: 12px; margin-top: 12px; }
+      .card-h{ padding: 12px 12px 9px; }
+      .card-b{ padding: 12px; }
+      .news{ padding: 12px; }
+      .news-toolbar{ padding: 10px 12px; }
+      .search{ min-width: 0; width: 100%; }
+      .item-top{ flex-direction: column; align-items: stretch; }
+      .impact{ align-self: flex-start; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="dot"></div>
+        <div>
+          <h1>Turrner <span>News Terminal</span></h1>
+          <div class="small" id="modeLabel">Worldwide • Live • Adaptive backend</div>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <div class="pill">
+          <span class="led"></span>
+          <span class="k">Selected:</span>
+          <span class="v" id="selectedPairLabel">XRP</span>
+        </div>
+        <div class="pill">
+          <span class="k">Direction:</span>
+          <span class="v" id="directionLabel">—</span>
+        </div>
+        <div class="pill">
+          <span class="k">Confidence:</span>
+          <span class="v" id="confidenceLabel">—</span>
+        </div>
+        <div class="pill">
+          <span class="k">Last refresh:</span>
+          <span class="v" id="lastRefresh">—</span>
+        </div>
+        <button class="btn" id="autoBtn">Auto: Off</button>
+        <button class="btn btn-accent" id="refreshBtn">Refresh</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-h">
+          <h2>Pairs</h2>
+          <div class="sub">Select an instrument</div>
+        </div>
+        <div class="card-b">
+          <div class="pairs" id="pairList"></div>
+          <div style="margin-top:12px" class="small" id="sourceHint">
+            Auto backend mode: `/api/intel/live` preferred, fallback `/api/gdelt-gateway.php`.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <h2 id="newsHeader">XRP — Catalyst Clusters</h2>
+          <div class="sub">Policy • geopolitics • macro • supply shocks • ranked by impact + confirmation</div>
+        </div>
+
+        <div class="news-toolbar">
+          <div class="search">
+            <span style="color:rgba(154,167,174,.85);font-weight:1000;font-size:12px">⌕</span>
+            <input id="searchInput" type="text" placeholder="Search clusters (English)..." />
+          </div>
+
+          <div class="filters">
+            <select id="hoursSelect" class="select-mini">
+              <option value="6">6h</option>
+              <option value="12">12h</option>
+              <option value="24" selected>24h</option>
+              <option value="48">48h</option>
+              <option value="72">72h</option>
+            </select>
+            <button class="toggle on" id="fAllBias">All</button>
+            <button class="toggle" id="fBuy">Buy</button>
+            <button class="toggle" id="fSell">Sell</button>
+            <button class="toggle" id="fNeutral">Neutral</button>
+          </div>
+        </div>
+
+        <div class="news-toolbar" style="border-top:1px solid rgba(30,42,47,.7)">
+          <div class="tags" id="topicTags">
+            <span class="tag on" data-topic="all">All topics</span>
+            <span class="tag" data-topic="govt">Govt</span>
+            <span class="tag" data-topic="geopol">Geopolitics</span>
+            <span class="tag" data-topic="macro">Macro</span>
+            <span class="tag" data-topic="supply">Supply</span>
+            <span class="tag" data-topic="risk">Risk</span>
+          </div>
+          <div class="filters">
+            <span class="small" id="hintLabel">—</span>
+          </div>
+        </div>
+
+        <div class="news" id="newsList">
+          <div class="skeleton">Loading…</div>
+        </div>
+
+        <div class="bar">
+          <div class="bar-left">
+            <span class="small" id="countLabel">—</span>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn" id="loadMoreBtn">Load more</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const PROXY_URL = "/api/gdelt-gateway.php";
+const INTEL_API = "/api/intel/live";
+const WINDOW_HOURS_DEFAULT = 24;
+
+const PAIRS = [
+  { key:"XRP", name:"XRP", desc:"Crypto • Ripple ecosystem" },
+  { key:"XAU", name:"XAU", desc:"Gold • Safe-haven macro" },
+  { key:"SILVER", name:"Silver", desc:"Silver • Industrial + macro" },
+  { key:"OIL", name:"Oil", desc:"Crude • Energy + geopolitics" }
+];
+
+const SUBQUERIES = {
+  XRP: [
+    { topic:"govt",  q:'(xrp OR ripple OR "ripple labs") (sec OR regulator OR regulation OR lawsuit OR court OR judge OR ruling OR appeal OR settlement)' },
+    { topic:"macro", q:'(xrp OR ripple) (etf OR approval OR listing OR delisting OR exchange OR custody OR futures OR derivatives OR "open interest")' },
+    { topic:"risk",  q:'(xrp OR ripple OR crypto) (hack OR exploit OR breach OR outage OR liquidation OR "risk-off")' },
+  ],
+  XAU: [
+    { topic:"macro",  q:'(gold OR xau OR bullion OR "spot gold") (fed OR "central bank" OR rates OR hike OR cut OR inflation OR cpi OR yields OR dollar OR usd OR dxy)' },
+    { topic:"geopol", q:'(gold OR bullion OR "safe haven") (war OR conflict OR escalation OR sanctions OR missile OR ceasefire)' },
+    { topic:"macro",  q:'(gold OR bullion) ("central bank" OR reserves OR "gold buying" OR purchases OR "reserve asset")' },
+  ],
+  SILVER: [
+    { topic:"macro",  q:'(silver OR xag OR "spot silver") (fed OR rates OR inflation OR cpi OR yields OR dollar OR usd OR dxy OR recession)' },
+    { topic:"supply", q:'(silver OR xag) (solar OR photovoltaic OR industrial OR manufacturing OR demand OR shortage OR supply OR mine OR smelter)' },
+    { topic:"risk",   q:'(silver OR xag) (sanctions OR export ban OR tariff OR disruption OR strike)' },
+  ],
+  OIL: [
+    { topic:"supply", q:'(oil OR brent OR wti OR "crude oil") (opec OR "opec+" OR quota OR "production cut" OR "output cut" OR meeting)' },
+    { topic:"geopol", q:'(oil OR crude OR brent OR wti) (red sea OR "strait of hormuz" OR shipping OR attack OR drone OR missile OR blockade)' },
+    { topic:"govt",   q:'(oil OR crude OR brent OR wti) (sanctions OR embargo OR export ban OR price cap)' },
+    { topic:"macro",  q:'(oil OR brent OR wti) (inventory OR stocks OR eia OR api OR spr OR "strategic petroleum reserve")' },
+  ]
+};
+
+const SOURCE_BOOST = {
+  "reuters.com": 14,
+  "bloomberg.com": 14,
+  "ft.com": 10,
+  "wsj.com": 10,
+  "cnbc.com": 7,
+  "marketwatch.com": 6,
+  "theguardian.com": 5,
+  "apnews.com": 5,
+  "aljazeera.com": 4,
+  "dw.com": 4
+};
+
+const TOPIC_KEYWORDS = {
+  govt:  ["government","ministry","treasury","parliament","congress","senate","regulator","policy","tariff","sanction","ban","law","court","judge","ruling","sec"],
+  geopol:["war","conflict","attack","strike","ceasefire","nato","iran","israel","gaza","ukraine","russia","china","taiwan","red sea","shipping","strait","missile","drone"],
+  macro: ["inflation","cpi","ppi","jobs","gdp","rates","hike","cut","yield","usd","dollar","recession","pmi","growth","liquidity","risk-off","risk on","inventory","stocks"],
+  supply:["opec","quota","production cut","output cut","shortage","supply","mine","smelter","outage","pipeline","refinery","inventory","stocks"],
+  risk:  ["hack","exploit","breach","liquidation","outage","security","crash","panic","risk-off","default"]
+};
+
+const DIR = {
+  up: [
+    /\b(rate cut|cuts rates|easing|stimulus|liquidity|pivot)\b/i,
+    /\b(ceasefire|de-?escalation|peace talks|deal reached)\b/i,
+    /\b(approval|approved|cleared|wins|settlement|dismissed)\b/i,
+    /\b(inventory draw|stocks draw|supply cut|output cut)\b/i,
+    /\b(beats estimates|strong demand|surge|rally|record high)\b/i
+  ],
+  down: [
+    /\b(rate hike|hikes rates|tightening|higher for longer)\b/i,
+    /\b(escalation|attack|strike|missile|war expands)\b/i,
+    /\b(sanctions|embargo|ban|crackdown|enforcement|lawsuit filed)\b/i,
+    /\b(inventory build|stocks build|demand slump|recession)\b/i,
+    /\b(plunge|selloff|crash|falls sharply|risk-off)\b/i
+  ]
+};
+
+const PAIR_DIR_BONUS = {
+  XRP: [
+    { re:/\b(sec appeal|appeals)\b/i, v:-1 },
+    { re:/\b(settlement|settles|dismissed|case dropped)\b/i, v:+1 },
+    { re:/\b(listing|listed|approval)\b/i, v:+1 },
+    { re:/\b(delisting|banned)\b/i, v:-1 }
+  ],
+  XAU: [
+    { re:/\b(higher yields|yields rise|strong dollar)\b/i, v:-1 },
+    { re:/\b(yields fall|weaker dollar|dollar slips)\b/i, v:+1 },
+    { re:/\b(risk-off|flight to safety)\b/i, v:+1 }
+  ],
+  SILVER: [
+    { re:/\b(solar demand|industrial demand)\b/i, v:+1 },
+    { re:/\b(factory slowdown|demand slump)\b/i, v:-1 }
+  ],
+  OIL: [
+    { re:/\b(outage|disruption|pipeline leak|refinery fire)\b/i, v:+1 },
+    { re:/\b(output rises|production rises)\b/i, v:-1 },
+    { re:/\b(inventory build|stocks build)\b/i, v:-1 },
+    { re:/\b(inventory draw|stocks draw)\b/i, v:+1 }
+  ]
+};
+
+const state = {
+  pair: "XRP",
+  clusters: [],
+  search: "",
+  biasFilter: "all",
+  topic: "all",
+  loadLevel: 0,
+  auto: false,
+  autoTimer: null,
+  dataMode: "hybrid",
+  hours: WINDOW_HOURS_DEFAULT
+};
+
+const elPairList = document.getElementById("pairList");
+const elNewsList = document.getElementById("newsList");
+const elHeader = document.getElementById("newsHeader");
+const elSelected = document.getElementById("selectedPairLabel");
+const elLastRefresh = document.getElementById("lastRefresh");
+const elSearch = document.getElementById("searchInput");
+const elCountLabel = document.getElementById("countLabel");
+const elHintLabel = document.getElementById("hintLabel");
+const elDirection = document.getElementById("directionLabel");
+const elConfidence = document.getElementById("confidenceLabel");
+const elModeLabel = document.getElementById("modeLabel");
+
+const btnRefresh = document.getElementById("refreshBtn");
+const btnLoadMore = document.getElementById("loadMoreBtn");
+const btnAuto = document.getElementById("autoBtn");
+const hoursSelect = document.getElementById("hoursSelect");
+
+const fAllBias = document.getElementById("fAllBias");
+const fBuy = document.getElementById("fBuy");
+const fSell = document.getElementById("fSell");
+const fNeutral = document.getElementById("fNeutral");
+const topicTags = document.getElementById("topicTags");
+
+function fmtTime(iso){
+  try{ return new Date(iso).toLocaleString(undefined, { year:"numeric", month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit" }); }
+  catch(_e){ return "—"; }
+}
+function pad2(n){ return String(n).padStart(2,"0"); }
+function ymdhmsUTC(d){ return `${d.getUTCFullYear()}${pad2(d.getUTCMonth()+1)}${pad2(d.getUTCDate())}${pad2(d.getUTCHours())}${pad2(d.getUTCMinutes())}${pad2(d.getUTCSeconds())}`; }
+function normalizeDomain(url){ try{ return new URL(url).hostname.replace(/^www\./,"").toLowerCase(); } catch(_e){ return ""; } }
+function safeText(s){ return String(s || "").replace(/[<>]/g, ""); }
+
+function recencyBoost(publishedAt){
+  const t = Date.parse(publishedAt || "");
+  if (!isFinite(t)) return 0;
+  const ageMin = (Date.now() - t) / 60000;
+  if (ageMin <= 30) return 10;
+  if (ageMin <= 120) return 7;
+  if (ageMin <= 360) return 4;
+  if (ageMin <= 720) return 2;
+  return 0;
+}
+
+const STOP = new Set(["the","and","for","with","from","that","this","into","over","amid","after","before","says","say","new","more","less","than","will","its","are","was","were","has","have","oil","gold","silver","xrp","ripple","brent","wti","crude","spot","market","markets"]);
+function tokenize(s){
+  return String(s||"").toLowerCase().replace(/https?:\/\/\S+/g," ").replace(/[^\w\s]/g," ").replace(/\s+/g," ").trim().split(" ").filter(w => w.length >= 3 && !STOP.has(w));
+}
+function jaccardTokens(aTokens, bTokens){
+  const A = new Set(aTokens), B = new Set(bTokens);
+  if (!A.size || !B.size) return 0;
+  let inter = 0;
+  for (const x of A) if (B.has(x)) inter++;
+  const union = A.size + B.size - inter;
+  return union ? inter/union : 0;
+}
+function topicsFromText(text){
+  const t = (text||"").toLowerCase();
+  const topics = [];
+  for (const [k, words] of Object.entries(TOPIC_KEYWORDS)) if (words.some(w => t.includes(w))) topics.push(k);
+  return topics.length ? topics : ["macro"];
+}
+function directionScore(pair, title){
+  const t = String(title||"");
+  let s = 0;
+  for (const re of DIR.up) if (re.test(t)) s += 1;
+  for (const re of DIR.down) if (re.test(t)) s -= 1;
+  for (const b of (PAIR_DIR_BONUS[pair] || [])) if (b.re.test(t)) s += b.v;
+  return s;
+}
+function directionLabelFromScore(score){ if (score >= 2) return "buy"; if (score <= -2) return "sell"; return "neutral"; }
+function impactArrow(impact){ return impact === "buy" ? "↗" : impact === "sell" ? "↘" : "→"; }
+function impactText(impact){ return impact === "buy" ? "Buy Pressure" : impact === "sell" ? "Sell Pressure" : "Neutral"; }
+function scoreBadgeClass(score){ return score >= 36 ? "good" : "warn"; }
+
+function impactScore(pair, title, domain, publishedAt, topicHint){
+  const t = String(title||"");
+  if (!t) return 0;
+  let score = 8 + recencyBoost(publishedAt);
+  const d = (domain||"").toLowerCase();
+  if (SOURCE_BOOST[d]) score += SOURCE_BOOST[d];
+  const topics = new Set([...topicsFromText(t), ...(topicHint ? [topicHint] : [])]);
+  if (topics.has("govt")) score += 10;
+  if (topics.has("geopol")) score += 10;
+  if (topics.has("supply")) score += 9;
+  if (topics.has("risk")) score += 7;
+  if (topics.has("macro")) score += 6;
+  return Math.max(0, Math.min(60, Math.round(score)));
+}
+
+function confidenceScore(confirmation, dirScore, impact){ return Math.min(100, Math.round((confirmation*22) + (Math.min(6, Math.abs(dirScore))*9) + (impact*0.5))); }
+function buildBullets(pair, topics, dirScore, confirmation){
+  const bullets = [];
+  if (topics.includes("govt")) bullets.push("Policy/regulatory catalyst detected — tends to reprice risk fast.");
+  else if (topics.includes("geopol")) bullets.push("Geopolitics catalyst detected — risk premium can shift quickly.");
+  else if (topics.includes("supply")) bullets.push("Supply catalyst detected — disruptions/cuts can move price immediately.");
+  else if (topics.includes("macro")) bullets.push("Macro catalyst detected — rates/FX/inflation changes positioning.");
+  else bullets.push("Mixed drivers — treat as watchlist and verify with sources.");
+
+  if (pair === "XRP") bullets.push("XRP: legal/regulatory outcomes + listings/ETFs are the highest-impact drivers.");
+  if (pair === "XAU") bullets.push("Gold: USD + real yields + geopolitical risk are primary direction levers.");
+  if (pair === "SILVER") bullets.push("Silver: macro + industrial demand/supply shocks often dominate swings.");
+  if (pair === "OIL") bullets.push("Oil: OPEC policy, sanctions, disruptions, shipping risk, inventories are key.");
+
+  if (dirScore >= 2) bullets.push("Direction read: supportive language / easing / positive outcome → upward bias.");
+  else if (dirScore <= -2) bullets.push("Direction read: tightening / escalation / crackdown → downward bias.");
+  else bullets.push("Direction read: mixed headline language → neutral bias until confirmed.");
+
+  if (confirmation >= 3) bullets.push("Confirmation: multiple independent sources (higher confidence).");
+  else if (confirmation === 2) bullets.push("Confirmation: more than one source (medium confidence).");
+  else bullets.push("Confirmation: single-source headline (lower confidence; verify).");
+
+  return bullets.slice(0, 4);
+}
+
+async function fetchJson(url){
+  const res = await fetch(url, { headers:{ "Accept":"application/json,text/plain,*/*" } });
+  const text = await res.text();
+  if (!res.ok) throw new Error(text.slice(0,240) || `HTTP ${res.status}`);
+  try { return JSON.parse(text); } catch(_e){ throw new Error(text.slice(0,240) || "Non-JSON response"); }
+}
+
+function maxRecords(){ return state.loadLevel === 0 ? 70 : state.loadLevel === 1 ? 110 : 160; }
+function buildGatewayUrl(query){
+  const now = new Date();
+  const start = new Date(now.getTime() - state.hours * 60 * 60 * 1000);
+  const u = new URL(PROXY_URL, window.location.origin);
+  u.searchParams.set("query", query);
+  u.searchParams.set("mode", "ArtList");
+  u.searchParams.set("sort", "DateDesc");
+  u.searchParams.set("format", "json");
+  u.searchParams.set("maxrecords", String(maxRecords()));
+  u.searchParams.set("startdatetime", ymdhmsUTC(start));
+  u.searchParams.set("enddatetime", ymdhmsUTC(now));
+  return u.toString();
+}
+
+function toArticle(a, topicHint){
+  const title = safeText(a.title || a.name || "");
+  const url = a.url || "";
+  const domain = (a.domain || normalizeDomain(url) || "");
+  const seenDate = a.seendate || a.date || a.datetime || "";
+  const topics = Array.from(new Set([...topicsFromText(title), ...(topicHint ? [topicHint] : [])]));
+  const dirScore = directionScore(state.pair, title);
+  return { title, url, domain, seenDate, topics, dirScore, impact: directionLabelFromScore(dirScore), impactScore: impactScore(state.pair, title, domain, seenDate, topicHint), tokens: tokenize(title) };
+}
+
+function clusterArticles(articles){
+  const clusters = [];
+  const SIM = 0.6;
+  for (const a of articles){
+    if (!a.title || a.impactScore < 1) continue;
+    let bestIdx = -1, bestSim = 0;
+    for (let i=0; i<clusters.length; i++){
+      const sim = jaccardTokens(a.tokens, clusters[i].reprTokens);
+      if (sim > bestSim){ bestSim = sim; bestIdx = i; }
+    }
+    if (bestSim >= SIM && bestIdx >= 0){
+      const c = clusters[bestIdx];
+      c.items.push(a);
+      c.domains.add(a.domain || "source");
+      c.topics = Array.from(new Set([...c.topics, ...a.topics]));
+      c.dirScore += a.dirScore;
+      c.impactSum += a.impactScore;
+      c.latestTs = Math.max(c.latestTs, Date.parse(a.seenDate||0) || 0);
+      if (a.impactScore > c.repr.impactScore) { c.repr = a; c.reprTokens = a.tokens; }
+    } else {
+      clusters.push({ repr:a, reprTokens:a.tokens, items:[a], domains:new Set([a.domain || "source"]), topics:a.topics.slice(), dirScore:a.dirScore, impactSum:a.impactScore, latestTs:Date.parse(a.seenDate||0) || 0 });
+    }
+  }
+
+  return clusters.map(c => {
+    const confirmation = Math.max(1, c.domains.size);
+    const avgImpact = c.items.length ? c.impactSum / c.items.length : 0;
+    const rec = c.latestTs ? recencyBoost(new Date(c.latestTs).toISOString()) : 0;
+    const impact = Math.min(60, Math.round(avgImpact + (confirmation * 6) + rec));
+    const dir = directionLabelFromScore(c.dirScore);
+    return {
+      title:c.repr.title,
+      impact:dir,
+      dirScore:c.dirScore,
+      impactScore:impact,
+      confidence:confidenceScore(confirmation, c.dirScore, impact),
+      confirmation,
+      topics:Array.from(new Set(c.topics)),
+      bullets:buildBullets(state.pair, Array.from(new Set(c.topics)), c.dirScore, confirmation),
+      sources:c.items.slice().sort((a,b)=> b.impactScore-a.impactScore).filter(x=>x.url).slice(0,6).map(x=>({domain:x.domain||"source", url:x.url, seenDate:x.seenDate})),
+      latestTs:c.latestTs
+    };
+  }).sort((a,b)=> b.impactScore-a.impactScore || b.confidence-a.confidence || (b.latestTs||0)-(a.latestTs||0));
+}
+
+function computeGlobalDirection(clusters){
+  if (!clusters.length) return { dir:"—", conf:"—" };
+  let net = 0, wsum = 0;
+  for (const c of clusters.slice(0,20)){
+    const w = Math.max(0.6, Math.min(2.0, c.impactScore/20)) * Math.max(0.8, Math.min(1.8, c.confirmation/2));
+    net += c.dirScore * w; wsum += w;
+  }
+  const avg = wsum ? net/wsum : 0;
+  let dir = "Neutral";
+  if (avg >= 0.7) dir = "Bullish";
+  else if (avg <= -0.7) dir = "Bearish";
+  else if (avg >= 0.35) dir = "Slight Bullish";
+  else if (avg <= -0.35) dir = "Slight Bearish";
+  const conf = Math.min(100, Math.round((Math.abs(avg)*55) + (Math.min(1, clusters[0].confirmation/3)*35)));
+  return { dir, conf: `${conf}%` };
+}
+
+function renderPairs(){
+  elPairList.innerHTML = "";
+  PAIRS.forEach(p => {
+    const row = document.createElement("div");
+    row.className = "pair" + (p.key === state.pair ? " active" : "");
+    row.onclick = () => {
+      state.pair = p.key;
+      elSelected.textContent = p.name;
+      elHeader.textContent = `${p.name} — Catalyst Clusters (${state.hours}h)`;
+      state.loadLevel = 0;
+      renderPairs();
+      loadAll();
+    };
+
+    const left = document.createElement("div");
+    left.className = "left";
+    const badge = document.createElement("div");
+    badge.className = "badge";
+    badge.textContent = p.key === "SILVER" ? "AG" : p.key;
+
+    const meta = document.createElement("div");
+    meta.className = "meta";
+    const sym = document.createElement("div"); sym.className = "sym"; sym.textContent = p.name;
+    const desc = document.createElement("div"); desc.className = "desc"; desc.textContent = p.desc;
+    meta.appendChild(sym); meta.appendChild(desc);
+
+    left.appendChild(badge); left.appendChild(meta);
+    const chip = document.createElement("div"); chip.className = "chip"; chip.textContent = "View";
+
+    row.appendChild(left); row.appendChild(chip); elPairList.appendChild(row);
+  });
+}
+
+function setBiasFilter(next){
+  state.biasFilter = next;
+  const map = { all:fAllBias, buy:fBuy, sell:fSell, neutral:fNeutral };
+  Object.entries(map).forEach(([k,btn]) => btn.classList.toggle("on", k === next));
+  renderNews();
+}
+function setTopic(next){
+  state.topic = next;
+  [...topicTags.querySelectorAll(".tag")].forEach(t => t.classList.toggle("on", t.dataset.topic === next));
+  renderNews();
+}
+
+function matchesSearch(c, q){
+  if (!q) return true;
+  const s = q.toLowerCase();
+  return (c.title||"").toLowerCase().includes(s)
+    || (c.bullets||[]).some(b => b.toLowerCase().includes(s))
+    || (c.sources||[]).some(x => (x.domain||"").toLowerCase().includes(s));
+}
+
+function renderNews(){
+  const q = (state.search || "").trim().toLowerCase();
+  let filtered = (state.clusters || [])
+    .filter(c => state.biasFilter === "all" ? true : c.impact === state.biasFilter)
+    .filter(c => state.topic === "all" ? true : (c.topics || []).includes(state.topic))
+    .filter(c => matchesSearch(c, q));
+
+  if (!filtered.length && state.clusters.length) filtered = state.clusters.slice();
+
+  elCountLabel.textContent = `Showing ${filtered.length} / ${state.clusters.length} catalyst clusters (${state.hours}h)`;
+
+  if (!filtered.length){
+    elNewsList.innerHTML = `<div class="skeleton">No clusters available.\n\nCheck backend availability and data window.</div>`;
+    return;
+  }
+
+  elNewsList.innerHTML = "";
+  for (const c of filtered){
+    const wrap = document.createElement("div");
+    wrap.className = "item";
+    const top = document.createElement("div"); top.className = "item-top";
+    const left = document.createElement("div"); left.style.flex = "1";
+    const h = document.createElement("h3"); h.className = "title"; h.textContent = c.title || "Untitled catalyst";
+
+    const meta = document.createElement("div");
+    meta.className = "meta2";
+    const dom = (c.sources[0] && c.sources[0].domain) ? c.sources[0].domain : "multiple";
+    meta.innerHTML = `
+      <span>${safeText(dom)}</span>
+      <span class="dot2"></span>
+      <span>${c.latestTs ? fmtTime(new Date(c.latestTs).toISOString()) : "—"}</span>
+      <span class="dot2"></span>
+      <span class="mini-badge ${scoreBadgeClass(c.impactScore)}">Score ${c.impactScore}</span>
+      <span class="dot2"></span>
+      <span class="mini-badge ${c.confidence>=70 ? "good" : "warn"}">Conf ${c.confidence}%</span>
+      <span class="dot2"></span>
+      <span class="mini-badge">${c.confirmation} src</span>`;
+
+    left.appendChild(h); left.appendChild(meta);
+    const impact = document.createElement("div"); impact.className = `impact ${c.impact || "neutral"}`;
+    impact.innerHTML = `<span class="arrow">${impactArrow(c.impact)}</span><span>${impactText(c.impact)}</span>`;
+    top.appendChild(left); top.appendChild(impact);
+
+    const ul = document.createElement("ul"); ul.className = "bullets";
+    (c.bullets || []).forEach(b => { const li = document.createElement("li"); li.textContent = b; ul.appendChild(li); });
+
+    const srcWrap = document.createElement("div"); srcWrap.className = "sources";
+    (c.sources || []).slice(0, 6).forEach((s, idx) => {
+      if (!s?.url) return;
+      const a = document.createElement("a");
+      a.className = "slink"; a.href = s.url; a.target = "_blank"; a.rel = "noreferrer";
+      a.textContent = `Source ${idx+1}`;
+      srcWrap.appendChild(a);
+    });
+
+    const footer = document.createElement("div"); footer.className = "footer-row";
+    footer.innerHTML = `<div>Topics: ${(c.topics||[]).map(safeText).join(", ") || "—"}</div><div>Clustered for action</div>`;
+    wrap.appendChild(top); wrap.appendChild(ul); wrap.appendChild(srcWrap); wrap.appendChild(footer);
+    elNewsList.appendChild(wrap);
+  }
+}
+
+function showMessage(lines){ elNewsList.innerHTML = `<div class="skeleton">${lines.join("\n")}</div>`; }
+
+async function loadViaIntelApi(){
+  const p = new URLSearchParams({ pair: state.pair, hours: String(state.hours), limit: String(maxRecords()) });
+  const payload = await fetchJson(`${INTEL_API}?${p.toString()}`);
+  const events = Array.isArray(payload.events) ? payload.events : [];
+  const clusters = events.map(e => ({
+    title: safeText(e.title || "Untitled catalyst"),
+    impact: e.impact_direction || "neutral",
+    dirScore: e.impact_direction === "buy" ? 2 : e.impact_direction === "sell" ? -2 : 0,
+    impactScore: Number(e.impact_score || 0),
+    confidence: Number(e.confidence || 0),
+    confirmation: 1,
+    topics: Array.isArray(e.tags) ? e.tags.map(safeText) : ["macro"],
+    bullets: buildBullets(state.pair, Array.isArray(e.tags) ? e.tags : ["macro"], 0, 1),
+    sources: [{ domain: normalizeDomain(e.url || e.source || "") || safeText(e.source || "source"), url: e.url || "", seenDate: e.published_at || "" }],
+    latestTs: Date.parse(e.published_at || "") || Date.now()
+  })).sort((a,b) => b.impactScore-a.impactScore || b.confidence-a.confidence);
+
+  const sum = payload.summary || {};
+  elDirection.textContent = safeText(sum.direction || "Neutral");
+  elConfidence.textContent = typeof sum.confidence === "number" ? `${sum.confidence}%` : "—";
+  return clusters;
+}
+
+async function loadViaGateway(){
+  const subs = SUBQUERIES[state.pair] || [];
+  const tasks = subs.map(async (sq) => {
+    const payload = await fetchJson(buildGatewayUrl(sq.q));
+    const arts = (payload && payload.articles) ? payload.articles : [];
+    return arts.map(a => toArticle(a, sq.topic));
+  });
+  const results = await Promise.allSettled(tasks);
+  const all = [];
+  for (const r of results) if (r.status === "fulfilled") all.push(...r.value);
+  if (!all.length) throw new Error("No articles returned from gateway");
+  const clusters = clusterArticles(all);
+  const g = computeGlobalDirection(clusters);
+  elDirection.textContent = g.dir;
+  elConfidence.textContent = g.conf;
+  return clusters;
+}
+
+function adaptiveClamp(clusters){
+  const cap = state.loadLevel === 0 ? 28 : state.loadLevel === 1 ? 45 : 70;
+  if (!clusters.length) return [];
+  return clusters.slice(0, cap);
+}
+
+async function loadAll(){
+  elHintLabel.textContent = "Scanning worldwide drivers…";
+  showMessage([`Loading ${state.pair} catalyst clusters (${state.hours}h)…`]);
+  elDirection.textContent = "—";
+  elConfidence.textContent = "—";
+
+  try{
+    let clusters = [];
+    try {
+      clusters = await loadViaIntelApi();
+      state.dataMode = "intel-api";
+      elModeLabel.textContent = `Worldwide • ${state.hours}h • via /api/intel/live`;
+    } catch(_e){
+      clusters = await loadViaGateway();
+      state.dataMode = "gateway";
+      elModeLabel.textContent = `Worldwide • ${state.hours}h • via /api/gdelt-gateway.php`;
+    }
+
+    state.clusters = adaptiveClamp(clusters);
+    elLastRefresh.textContent = fmtTime(new Date().toISOString());
+    elHintLabel.textContent = `Mode: ${state.dataMode} • clustered • ranked • live`;
+    renderNews();
+  }catch(e){
+    showMessage([
+      `Failed to load live news (${state.hours}h).`,
+      "",
+      "Error: " + String(e && e.message ? e.message : e),
+      "",
+      "Fix options:",
+      "1) Check /api/intel/live availability",
+      "2) Check /api/gdelt-gateway.php availability",
+      "3) Review server/network logs"
+    ]);
+    elHintLabel.textContent = "Failed to load.";
+  }
+}
+
+function setAuto(enabled){
+  state.auto = enabled;
+  if (state.autoTimer) clearInterval(state.autoTimer);
+  state.autoTimer = null;
+  if (enabled){
+    state.autoTimer = setInterval(() => { state.loadLevel = 0; loadAll(); }, 60_000);
+    btnAuto.textContent = "Auto: On";
+    btnAuto.classList.add("btn-accent");
+  } else {
+    btnAuto.textContent = "Auto: Off";
+    btnAuto.classList.remove("btn-accent");
+  }
+}
+
+elSearch.addEventListener("input", (ev) => { state.search = ev.target.value || ""; renderNews(); });
+btnRefresh.addEventListener("click", () => { state.loadLevel = 0; loadAll(); });
+btnLoadMore.addEventListener("click", () => { state.loadLevel = Math.min(2, state.loadLevel + 1); loadAll(); });
+btnAuto.addEventListener("click", () => setAuto(!state.auto));
+hoursSelect.addEventListener("change", () => { state.hours = Number(hoursSelect.value || WINDOW_HOURS_DEFAULT); state.loadLevel = 0; elHeader.textContent = `${state.pair} — Catalyst Clusters (${state.hours}h)`; loadAll(); });
+
+fAllBias.addEventListener("click", () => setBiasFilter("all"));
+fBuy.addEventListener("click", () => setBiasFilter("buy"));
+fSell.addEventListener("click", () => setBiasFilter("sell"));
+fNeutral.addEventListener("click", () => setBiasFilter("neutral"));
+
+topicTags.addEventListener("click", (e) => {
+  const t = e.target.closest(".tag");
+  if (!t) return;
+  setTopic(t.dataset.topic);
+});
+
+renderPairs();
+setBiasFilter("all");
+setTopic("all");
+state.hours = Number(hoursSelect.value || WINDOW_HOURS_DEFAULT);
+elHeader.textContent = `${state.pair} — Catalyst Clusters (${state.hours}h)`;
+loadAll();
+</script>
+</body>
+</html>
